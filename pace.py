@@ -32,23 +32,9 @@ for filename in glob.glob('*.gpx'):
 			
 			print(pace, length_km)
 			
-			if length_km > 1 * ureg.kilometer and pace < best_1k_pace:
-				best_1k_pace = pace
-								
-			if length_km > 5 * ureg.kilometer and pace < best_5k_pace:
-				best_5k_pace = pace
-								
-			if length_km > 10 * ureg.kilometer and pace < best_10k_pace:
-				best_10k_pace = pace
-			
-			if length_km > 15 * ureg.kilometer and pace < best_15k_pace:
-				best_15k_pace = pace
-				
-			if length_km > 20 * ureg.kilometer and pace < best_20k_pace:
-				best_20k_pace = pace
-				
-print("1k best pace: ", best_1k_pace)
-print("5k best pace: ", best_5k_pace)
-print("10k best pace: ", best_10k_pace)
-print("15k best pace: ", best_15k_pace)
-print("20k best pace: ", best_20k_pace)
+			for distance, record in best_paces:
+				if length_km > dictance and pace < record:
+					record = pace
+
+for distance, record in best_paces:
+	print(distance, "best", record)
