@@ -1,24 +1,18 @@
-#TODO: 
-# Use units
-# Convert from decimal to minutes:seconds (use datetime.timedelta)
+import collections
 import glob
 import gpxpy
 import gpxpy.gpx
 import datetime
 from pint import UnitRegistry
 ureg = UnitRegistry()
+ureg.define("timedelta = 1 = dt")
 
-best_paces = {1 * ureg.kilometer : datetime.timedelta(minutes=10) / ureg.kilometer,
-			  5 * ureg.kilometer : datetime.timedelta(minutes=10) / ureg.kilometer,
-			  10 * ureg.kilometer : datetime.timedelta(minutes=10) / ureg.kilometer,
-			  15 * ureg.kilometer : datetime.timedelta(minutes=10) / ureg.kilometer,
-			  20 * ureg.kilometer : datetime.timedelta(minutes=10) / ureg.kilometer}
-
-#best_1k_pace = datetime.timedelta(minutes=10) / ureg.kilometer
-#best_5k_pace = datetime.timedelta(minutes=10) / ureg.kilometer
-#best_10k_pace = datetime.timedelta(minutes=10) / ureg.kilometer
-#best_15k_pace = datetime.timedelta(minutes=10) / ureg.kilometer
-#best_20k_pace = datetime.timedelta(minutes=10) / ureg.kilometer
+best_paces = collections.OrderedDict()
+best_paces[1] = datetime.timedelta(minutes=10) * ureg.timedelta / ureg.kilometer
+best_paces[5] = datetime.timedelta(minutes=10) * ureg.timedelta / ureg.kilometer
+best_paces[10] = datetime.timedelta(minutes=10) * ureg.timedelta / ureg.kilometer
+best_paces[15] = datetime.timedelta(minutes=10) * ureg.timedelta / ureg.kilometer
+best_paces[20] = datetime.timedelta(minutes=10) * ureg.timedelta / ureg.kilometer
 
 for filename in glob.glob('*.gpx'):
 	file = open(filename, 'r')
@@ -28,13 +22,13 @@ for filename in glob.glob('*.gpx'):
 		if ('Running' in track.name):
 			length_km = (track.length_3d() / 1000.0) * ureg.kilometer
 			time = datetime.timedelta(seconds=track.get_duration())
-			pace = time / length_km
+			pace = time * ureg.timedelta / length_km
 			
 			print(pace, length_km)
 			
-			for distance, record in best_paces:
-				if length_km > dictance and pace < record:
-					record = pace
+			for distance, record in best_paces.items():
+				if length_km > (distance * ureg.kilometer) and pace < record:
+					best_paces[distance] = pace
 
-for distance, record in best_paces:
-	print(distance, "best", record)
+for distance, record in best_paces.items():
+	print(distance * ureg.km, "record:", record)
