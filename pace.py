@@ -19,13 +19,13 @@ for filename in glob.glob('*.gpx'):
         if "Running" in track.name:
             length = track.length_3d() / 1000.0
             duration = datetime.timedelta(seconds=track.get_duration())
-            pace = length
+            pace = duration / length
 
-            print("%.2f km/min" % pace, length)
+            print(str(pace).split('.')[0] + " min/km", "%.2f km" % length)
 
             for distance, record in records.items():
                 if length > distance and pace < record:
                     records[distance] = pace
 
 for distance, record in records.items():
-    print("%.2f km" % distance, "% km/min" % str(record))
+    print("%.2f km" % distance, str(record).split('.')[0] + " min/km")
