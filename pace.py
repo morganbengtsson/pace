@@ -1,24 +1,26 @@
-import collections
 import glob
+import csv
 import gpxpy
 import gpxpy.gpx
-import datetime
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 class Run:
-    def __init__(self, duration:timedelta, length:float):
+    def __init__(self, length:float, duration:timedelta, time:datetime):
         self.duration = duration
         self.length = length
+        self.time = time
+
+    def __str__(self):
+        return str(self.pace()).split('.')[0] + " min/km" + " %.2f km" % self.length + " " + str(self.time)
 
     def pace(self) -> timedelta:
         return self.duration / self.length
 
-records = collections.OrderedDict()
-records[1] = datetime.timedelta(minutes=10)
-records[5] = datetime.timedelta(minutes=10)
-records[10] = datetime.timedelta(minutes=10)
-records[15] = datetime.timedelta(minutes=10)
-records[20] = datetime.timedelta(minutes=10)
+class Runs(list):
+    def record(self, length) -> Run:
+        return min([x for x in runs if x.length > length], key=lambda item:item.pace())
+
+runs = Runs()
 
 for filename in glob.glob('*.gpx'):
     file = open(filename, 'r')
@@ -26,15 +28,19 @@ for filename in glob.glob('*.gpx'):
 
     for track in gpx.tracks:
         if "Running" in track.name:
-            length = track.length_3d() / 1000
-            duration = datetime.timedelta(seconds=track.get_duration())
-            pace = duration / length
+            runs.append(Run(track.length_3d() / 1000.0,
+                            timedelta(seconds=track.get_duration()),
+                            track.get_time_bounds()[0]))
 
-            print(str(pace).split('.')[0] + " min/km", "%.2f km" % length)
+with open("data.csv", "w", newline='') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['Date', 'Average pace'])
+    for run in runs:
+        if run.length > 7.0:
+            writer.writerow([str(run.time),str(run.pace()).split('.')[0]])
 
-            for distance, record in records.items():
-                if length > distance and pace < record:
-                    records[distance] = pace
-
-for distance, record in records.items():
-    print("%.2f km" % distance, str(record).split('.')[0] + " min/km")
+print(runs.record(1.0))
+print(runs.record(5.0))
+print(runs.record(10.0))
+print(runs.record(15.0))
+print(runs.record(20.0))
