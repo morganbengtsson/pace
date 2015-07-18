@@ -3,6 +3,15 @@ import glob
 import gpxpy
 import gpxpy.gpx
 import datetime
+from datetime import timedelta
+
+class Run:
+    def __init__(self, duration:timedelta, length:float):
+        self.duration = duration
+        self.length = length
+
+    def pace(self) -> timedelta:
+        return self.duration / self.length
 
 records = collections.OrderedDict()
 records[1] = datetime.timedelta(minutes=10)
@@ -17,7 +26,7 @@ for filename in glob.glob('*.gpx'):
 
     for track in gpx.tracks:
         if "Running" in track.name:
-            length = track.length_3d() / 1000.0
+            length = track.length_3d() / 1000
             duration = datetime.timedelta(seconds=track.get_duration())
             pace = duration / length
 
