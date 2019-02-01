@@ -1,8 +1,8 @@
 import glob
 import csv
-import gpxpy
 import gpxpy.gpx
 from datetime import timedelta, datetime
+
 
 class Run:
     def __init__(self, length:float, duration:timedelta, time:datetime):
@@ -16,11 +16,14 @@ class Run:
     def pace(self) -> timedelta:
         return self.duration / self.length
 
+
 class Runs(list):
     def record(self, length) -> Run:
         return min([x for x in runs if x.length > length], key=lambda item:item.pace())
 
+
 runs = Runs()
+
 
 for filename in glob.glob('*.gpx'):
     file = open(filename, 'r')
@@ -36,8 +39,12 @@ with open("data.csv", "w", newline='') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['Date', 'Average pace'])
     for run in runs:
-        if run.length > 7.0:
-            writer.writerow([str(run.time),str(run.pace()).split('.')[0]])
+        if 10.0 < run.length < 15.0:
+            total_seconds = run.pace().total_seconds()
+            h = total_seconds // 3600
+            m = (total_seconds % 3600) // 60
+            sec = (total_seconds % 3600) % 60
+            writer.writerow([run.time.strftime("%Y-%m-%d"), '{:02d}:{:02d}:{:02d}'.format(int(h), int(m), int(sec))])
 
 print(runs.record(1.0))
 print(runs.record(5.0))
